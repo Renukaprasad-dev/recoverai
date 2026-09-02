@@ -1,0 +1,15 @@
+{
+  "event": "payment.failed",
+  "payment": {
+    "id": "pay_human_test_001",
+    "amount": 45000,
+    "currency": "INR",
+    "method": "card",
+    "error_reason": "unexpected_processing_error"
+  },
+  "customer": {
+    "name": "Human Review Test",
+    "email": "human.review.test@recoverai.local",
+    "phone": "9876543210"
+  }
+}

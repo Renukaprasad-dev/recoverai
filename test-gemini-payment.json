@@ -1,0 +1,15 @@
+{
+  "event": "payment.failed",
+  "payment": {
+    "id": "pay_gemini_test_001",
+    "amount": 7500,
+    "currency": "INR",
+    "method": "card",
+    "error_reason": "insufficient_funds"
+  },
+  "customer": {
+    "name": "Gemini Demo Customer",
+    "email": "gemini.demo@recoverai.local",
+    "phone": "9876543210"
+  }
+}
