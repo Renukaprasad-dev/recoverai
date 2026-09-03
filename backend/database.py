@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import (
     async_sessionmaker,
     create_async_engine,
 )
+from sqlalchemy.pool import NullPool
 
 
 # ============================================================
@@ -27,6 +28,7 @@ class Settings(BaseSettings):
     DB_HOST: str
     DB_PORT: int = 5432
     DB_NAME: str = "postgres"
+    SQLALCHEMY_ECHO: bool = False
 
     model_config = SettingsConfigDict(
         env_file=ENV_FILE,
@@ -58,8 +60,9 @@ database_url = URL.create(
 
 engine = create_async_engine(
     database_url,
-    echo=True,
+    echo=settings.SQLALCHEMY_ECHO,
     pool_pre_ping=True,
+    poolclass=NullPool,
 )
 
 

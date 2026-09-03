@@ -1,7 +1,11 @@
 import asyncio
 
-from backend.database import engine
-from backend.models import Base
+try:
+    from backend.database import engine
+    from backend.models import Base
+except ModuleNotFoundError:
+    from database import engine
+    from models import Base
 
 
 async def create_tables():

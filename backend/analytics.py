@@ -4,12 +4,20 @@ from fastapi import APIRouter, Depends
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.database import get_db
-from backend.models import (
-    Customer,
-    FailedTransaction,
-    RecoveryCampaign,
-)
+try:
+    from backend.database import get_db
+    from backend.models import (
+        Customer,
+        FailedTransaction,
+        RecoveryCampaign,
+    )
+except ModuleNotFoundError:
+    from database import get_db
+    from models import (
+        Customer,
+        FailedTransaction,
+        RecoveryCampaign,
+    )
 
 
 router = APIRouter(

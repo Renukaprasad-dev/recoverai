@@ -6,7 +6,10 @@ from dotenv import load_dotenv
 from google import genai
 from google.genai import types
 
-from backend.ai_models import AIRecoveryDecision
+try:
+    from backend.ai_models import AIRecoveryDecision
+except ModuleNotFoundError:
+    from ai_models import AIRecoveryDecision
 
 
 # ============================================================

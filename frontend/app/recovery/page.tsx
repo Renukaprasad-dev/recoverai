@@ -2,8 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-const API_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+import { API_CONNECTION_ERROR, API_URL } from "../../lib/api";
 
 type RecoveryCase = {
   campaign_id: number;
@@ -129,7 +128,7 @@ export default function RecoveryPage() {
       console.error(err);
 
       setError(
-        "Unable to connect to RecoverAI backend. Make sure FastAPI is running on port 8000."
+        API_CONNECTION_ERROR
       );
     } finally {
       setLoading(false);

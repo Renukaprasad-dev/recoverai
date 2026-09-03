@@ -2,8 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 
-const API_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+import { API_CONNECTION_ERROR, API_URL } from "../../lib/api";
 
 function wait(ms: number) {
   return new Promise((resolve) => {
@@ -971,7 +970,7 @@ async function findPendingCampaign(
         }
       } catch {
         setError(
-          "Unable to connect to RecoverAI backend."
+          API_CONNECTION_ERROR
         );
       }
     },

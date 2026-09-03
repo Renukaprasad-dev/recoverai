@@ -1,7 +1,10 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.models import FailedTransaction
+try:
+    from backend.models import FailedTransaction
+except ModuleNotFoundError:
+    from models import FailedTransaction
 
 async def get_customer_payment_history(
     db: AsyncSession,

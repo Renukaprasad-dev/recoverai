@@ -1,30 +1,46 @@
+import hashlib
+import hmac
 import json
+import os
 from decimal import Decimal
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, Header, HTTPException, Request
 from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.database import get_db
-
-from backend.models import (
-    AuditLog,
-    Customer,
-    FailedTransaction,
-    Merchant,
-    RecoveryCampaign,
-)
-
-from backend.recovery_engine import (
-    decide_recovery,
-    validate_ai_decision,
-    RecoveryDecision,
-)
-
-from backend.gemini_agent import generate_recovery_decision
-
-from backend.customer_history import get_customer_payment_history
+try:
+    from backend.database import get_db
+    from backend.models import (
+        AuditLog,
+        Customer,
+        FailedTransaction,
+        Merchant,
+        RecoveryCampaign,
+    )
+    from backend.recovery_engine import (
+        decide_recovery,
+        validate_ai_decision,
+        RecoveryDecision,
+    )
+    from backend.gemini_agent import generate_recovery_decision
+    from backend.customer_history import get_customer_payment_history
+except ModuleNotFoundError:
+    from database import get_db
+    from models import (
+        AuditLog,
+        Customer,
+        FailedTransaction,
+        Merchant,
+        RecoveryCampaign,
+    )
+    from recovery_engine import (
+        decide_recovery,
+        validate_ai_decision,
+        RecoveryDecision,
+    )
+    from gemini_agent import generate_recovery_decision
+    from customer_history import get_customer_payment_history
 
 
 # ============================================================
@@ -62,14 +78,61 @@ class PaymentFailedWebhook(BaseModel):
 
 
 # ============================================================
+# RAZORPAY SIGNATURE VERIFICATION
+# ============================================================
+
+def verify_razorpay_signature(
+    raw_body: bytes,
+    signature: str | None,
+):
+    webhook_secret = os.getenv("RAZORPAY_WEBHOOK_SECRET")
+
+    if not webhook_secret:
+        return
+
+    if not signature:
+        raise HTTPException(
+            status_code=401,
+            detail="Missing Razorpay webhook signature",
+        )
+
+    expected_signature = hmac.new(
+        webhook_secret.encode("utf-8"),
+        raw_body,
+        hashlib.sha256,
+    ).hexdigest()
+
+    if not hmac.compare_digest(expected_signature, signature):
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid Razorpay webhook signature",
+        )
+
+
+# ============================================================
 # PAYMENT FAILED WEBHOOK
 # ============================================================
 
 @router.post("/payment-failed")
 async def payment_failed_webhook(
-    payload: PaymentFailedWebhook,
+    request: Request,
+    x_razorpay_signature: str | None = Header(default=None),
     db: AsyncSession = Depends(get_db),
 ):
+    raw_body = await request.body()
+
+    verify_razorpay_signature(
+        raw_body=raw_body,
+        signature=x_razorpay_signature,
+    )
+
+    try:
+        payload = PaymentFailedWebhook.model_validate_json(raw_body)
+    except Exception as exc:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid webhook payload: {type(exc).__name__}",
+        ) from exc
 
     # ========================================================
     # 1. VALIDATE EVENT

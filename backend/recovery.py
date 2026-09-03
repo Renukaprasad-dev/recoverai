@@ -5,13 +5,22 @@ from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.database import get_db
-from backend.models import (
-    AuditLog,
-    Customer,
-    FailedTransaction,
-    RecoveryCampaign,
-)
+try:
+    from backend.database import get_db
+    from backend.models import (
+        AuditLog,
+        Customer,
+        FailedTransaction,
+        RecoveryCampaign,
+    )
+except ModuleNotFoundError:
+    from database import get_db
+    from models import (
+        AuditLog,
+        Customer,
+        FailedTransaction,
+        RecoveryCampaign,
+    )
 
 
 router = APIRouter(

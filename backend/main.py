@@ -2,10 +2,16 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 
-from backend.database import engine
-from backend.webhooks import router as webhook_router
-from backend.recovery import router as recovery_router
-from backend.analytics import router as analytics_router
+try:
+    from backend.database import engine
+    from backend.webhooks import router as webhook_router
+    from backend.recovery import router as recovery_router
+    from backend.analytics import router as analytics_router
+except ModuleNotFoundError:
+    from database import engine
+    from webhooks import router as webhook_router
+    from recovery import router as recovery_router
+    from analytics import router as analytics_router
 
 
 # ============================================================
@@ -25,11 +31,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-        "https://recoverai-taupe.vercel.app",
-    ],
+    allow_origins=["https://recoverai-taupe.vercel.app"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
